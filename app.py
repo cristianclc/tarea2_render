@@ -145,7 +145,34 @@ years = [str(y) for y in range(2000, 2019)]
 #Layout de la página-----------------------------
 app.layout = html.Div([
     
-    html.H1("Dashboard de Análisis", style={"textAlign": "center"}), 
+    html.H1("Dashboard de Análisis - Tasa de Mortalidad por Cáncer en Colombia", style={"textAlign": "center"}),
+
+    # Explicación del Dataset
+    html.Div([
+        html.H2("Explicación del Dataset"),
+        html.P([
+            html.Strong("Fuente: "),
+            "Departamento Administrativo Nacional de Estadística (DANE) e Instituto Nacional de Cancerología"
+        ]),
+        html.P([
+            html.Strong("Enlace: "),
+            html.A(
+                "Dataset Original", 
+                href="https://www.datos.gov.co/Salud-y-Protecci-n-Social/Tasa-de-mortalidad-por-tipo-de-c-ncer/64it-izw2/about_data",
+                target="_blank"
+            )
+        ]),
+        html.P("El conjunto de datos contiene información sobre la tasa de mortalidad cruda por tipo de cáncer (por 100.000 personas-año), " 
+               "agrupada por departamento, en el período comprendido entre 1997 y 2019."),
+        html.P([
+            html.Strong("Variables principales:"),
+            html.Ul([
+                html.Li("Localización: Departamento de interés"),
+                html.Li("Tipo de Cáncer: Tipo específico de cáncer"), 
+                html.Li("Variables numéricas: Tasa de mortalidad por 100k habitantes en cada año (1997-2019)")
+            ])
+        ])
+    ]),
 
     #1 parte
     html.H2("1. Tasa de mortalidad por departamento"),
@@ -288,7 +315,8 @@ app.layout = html.Div([
         html.Li("Detectar patrones epidemiológicos y clusters regionales."),
         html.Li("Apoyar la planificación de políticas públicas para asignar recursos y evaluar impacto de programas regionales."),
     ])
-],style={"fontFamily": "Arial, Helvetica, sans-serif"})
+
+],style={"fontFamily": "Arial, Helvetica, sans-serif",'backgroundColor': '#f8f9fa', 'padding': '20px', 'borderRadius': '10px', 'marginBottom': '20px'})
 
 
 @app.callback(
