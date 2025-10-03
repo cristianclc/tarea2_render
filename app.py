@@ -11,7 +11,7 @@ import json
 
 #Carga de datos
 df = pd.read_csv("Tasa_mortalidad_cancer.csv")
-mapa_col= gpd.read_file("COLOMBIA\COLOMBIA.shp",encoding="latin1")
+mapa_col = gpd.read_file("COLOMBIA/COLOMBIA.shp", encoding='latin1')
 
 codigos_departamentos = {
     'Amazonas': '91',
