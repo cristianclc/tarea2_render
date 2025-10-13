@@ -145,151 +145,175 @@ years = [str(y) for y in range(2000, 2019)]
 #Layout de la página-----------------------------
 app.layout = html.Div([
     
-    html.H1("Dashboard de Análisis", style={"textAlign": "center"}), 
-
-    #1 parte
-    html.H2("1. Tasa de mortalidad por departamento"),
-    html.P("Este gráfico muestra la comparación de la tasa de mortalidad entre los diferentes departamentos en un año específico. "
-           "Permite identificar cuáles regiones presentan mayores o menores niveles de mortalidad por cáncer en el periodo seleccionado."),
-    dcc.Dropdown(
-        id="year-dropdown-loc",
-        options=[{"label": y, "value": y} for y in years],
-        value="2000" 
-    ),
-    dcc.Graph(id="graph-bar-loc"),
-
-    #2 parte
-    html.H2("2. Tasa de mortalidad por tipo de cáncer"),
-    html.P("Aquí se presenta la mortalidad según el tipo de cáncer en Colombia. "
-           "Esto permite entender qué tipos de cáncer son más prevalentes en el año seleccionado."),
-    dcc.Dropdown(
-        id="year-dropdown-can",
-        options=[{"label": y, "value": y} for y in years],
-        value="2000"
-    ),
-    dcc.Graph(id="graph-bar-can"),
-
-    #3 parte boxplots
-    html.H2("3. Boxplots comparativos por cánceres frecuentes"),
-    html.P("Los siguientes boxplots comparan la distribución de tasas de mortalidad en tres de los cánceres más frecuentes (pulmón, mama y colon), "
-           "en dos momentos del tiempo (2000 vs 2018). Esto permite observar cambios en la dispersión y valores atípicos."),
-    html.H3("Boxplot Tasa de mortalidad cáncer de Pulmón (2000 vs 2018)"),
-    dcc.Graph(figure=fig_box_pul),  # Mostramos el boxplot
-
-    html.H3("Boxplot Tasa de mortalidad cáncer de Mama (2000 vs 2018)"),
-    dcc.Graph(figure=fig_box_mama),  # Mostramos el boxplot
-
-    html.H3("Boxplot Tasa de mortalidad cáncer de Colon (2000 vs 2018)"),
-    dcc.Graph(figure=fig_box_colon),  # Mostramos el boxplot
-
-    #4 parte Grafica de linea temporal
-    html.H2("4. Evolución temporal por departamento y tipo de cáncer"),
-    html.P("La línea de tiempo permite seguir la evolución de la mortalidad en un departamento y tipo de cáncer específico. "
-           "Esto facilita analizar tendencias y posibles reducciones o aumentos en el tiempo."),
-    html.Div([ 
-        html.Div([
-            html.Label("Selecciona departamento:"),
-            dcc.Dropdown(
-                id="dropdown-depto",
-                options=[{"label": loc, "value": loc} for loc in df_long["localizacion"].unique()],
-                value=df_long["localizacion"].unique()[0],
-                clearable=False
-            )
-        ], style={"width": "45%", "display": "inline-block"}),
-
-        html.Div([
-            html.Label("Selecciona tipo de cáncer:"),
-            dcc.Dropdown(
-                id="dropdown-cancer",
-                options=[
-                    {"label": "Cáncer de Pulmón", "value": "Pulmón"},
-                    {"label": "Cáncer de Mama", "value": "Mama"},
-                    {"label": "Cáncer de Colon", "value": "Colon"}
-                ],
-                value="Pulmón", 
-                clearable=False
-            )
-        ], style={"width": "45%", "display": "inline-block", "marginLeft": "5%"})
-    ]),
-
-    dcc.Graph(id="linea-temporal"),
-
-
-    #5 parte mapa coroplético
-    html.H2("5. Mapa coroplético con tasa de mortalidad por departamento"),
-    html.P("Este mapa muestra la distribución espacial de la mortalidad por cáncer en Colombia. "
-           "El usuario puede seleccionar el año y el tipo de cáncer (Pulmón, Mama o Colon) para observar cómo varía la mortalidad "
-           "entre departamentos."),
+    # --- TÍTULO PRINCIPAL ---
+    html.H1("Dashboard de Análisis - Tasa de Mortalidad por Cáncer en Colombia", 
+            style={"textAlign": "center", "marginBottom": "40px"}),
 
     html.Div([
+        html.H2("1. Introducción y Objetivo del Análisis", 
+                style={"color": "#2c3e50", "borderBottom": "2px solid #2c3e50", "paddingBottom": "10px"}),
+
+        html.P("Este dashboard tiene como propósito analizar la evolución y distribución territorial "
+               "de la tasa de mortalidad por distintos tipos de cáncer en Colombia entre los años 1997 y 2019. "
+               "Permite identificar patrones temporales y regionales relevantes para la salud pública."),
+
+        html.H3("Fuente de datos"),
+        html.P([
+            html.Strong("Fuente: "),
+            "Departamento Administrativo Nacional de Estadística (DANE) e Instituto Nacional de Cancerología"
+        ]),
+        html.P([
+            html.Strong("Enlace al dataset: "),
+            html.A("Tasa de mortalidad por tipo de cáncer (Datos Abiertos Colombia)",
+                   href="https://www.datos.gov.co/Salud-y-Protecci-n-Social/Tasa-de-mortalidad-por-tipo-de-c-ncer/64it-izw2/about_data",
+                   target="_blank")
+        ]),
+
+        html.H3("Variables principales"),
+        html.Ul([
+            html.Li("Localización: Departamento o región de análisis."),
+            html.Li("Tipo de cáncer: Categoría del cáncer (Pulmón, Mama, Colon, etc.)."),
+            html.Li("Tasa de mortalidad: Número de muertes por cada 100,000 habitantes por año."),
+        ]),
+    ], style={"backgroundColor": "#ffffff", "padding": "25px", "borderRadius": "10px",
+              "boxShadow": "0px 2px 5px rgba(0,0,0,0.1)", "marginBottom": "40px"}),
+
+    html.Div([
+        html.H2("2. Visualizaciones y Exploración de Datos", 
+                style={"color": "#2c3e50", "borderBottom": "2px solid #2c3e50", "paddingBottom": "10px"}),
+
+        html.H3("Tasa de mortalidad por departamento"),
+        html.P("Comparación de la tasa de mortalidad entre los diferentes departamentos en un año específico."),
+        dcc.Dropdown(
+            id="year-dropdown-loc",
+            options=[{"label": y, "value": y} for y in years],
+            value="2000"
+        ),
+        dcc.Graph(id="graph-bar-loc", style={"marginBottom": "40px"}),
+
+        html.H3("Tasa de mortalidad por tipo de cáncer"),
+        html.P("Comparación de mortalidad según el tipo de cáncer en el año seleccionado."),
+        dcc.Dropdown(
+            id="year-dropdown-can",
+            options=[{"label": y, "value": y} for y in years],
+            value="2000"
+        ),
+        dcc.Graph(id="graph-bar-can", style={"marginBottom": "40px"}),
+
+        html.H3("Boxplots comparativos de cánceres frecuentes (Pulmón, Mama, Colon)"),
+        html.P("Distribución de tasas de mortalidad en tres de los cánceres más frecuentes en 2000 vs 2018."),
+        dcc.Graph(figure=fig_box_pul),
+        dcc.Graph(figure=fig_box_mama),
+        dcc.Graph(figure=fig_box_colon, style={"marginBottom": "40px"}),
+
+        html.H3("Evolución temporal por departamento y tipo de cáncer"),
+        html.P("Tendencia temporal de la mortalidad en un tipo de cáncer y departamento específicos."),
+        html.Div([ 
+            html.Div([
+                html.Label("Selecciona departamento:"),
+                dcc.Dropdown(
+                    id="dropdown-depto",
+                    options=[{"label": loc, "value": loc} for loc in df_long["localizacion"].unique()],
+                    value=df_long["localizacion"].unique()[0],
+                    clearable=False
+                )
+            ], style={"width": "45%", "display": "inline-block"}),
+
+            html.Div([
+                html.Label("Selecciona tipo de cáncer:"),
+                dcc.Dropdown(
+                    id="dropdown-cancer",
+                    options=[
+                        {"label": "Cáncer de Pulmón", "value": "Pulmón"},
+                        {"label": "Cáncer de Mama", "value": "Mama"},
+                        {"label": "Cáncer de Colon", "value": "Colon"}
+                    ],
+                    value="Pulmón", 
+                    clearable=False
+                )
+            ], style={"width": "45%", "display": "inline-block", "marginLeft": "5%"}),
+        ]),
+        dcc.Graph(id="linea-temporal", style={"marginBottom": "40px"}),
+
+        html.H3("Mapa coroplético de mortalidad"),
+        html.P("Distribución espacial de la tasa de mortalidad por tipo de cáncer y año seleccionado."),
         html.Div([
-            html.Label("Selecciona año:"),
-            dcc.Dropdown(
-                id="map-year-dropdown",
-                options=[{"label": y, "value": y} for y in years],
-                value="2019",  
-                clearable=False,
-                style={"width": "200px"}
-            )
-        ], style={"display": "inline-block", "marginRight": "20px"}),
+            html.Div([
+                html.Label("Selecciona año:"),
+                dcc.Dropdown(
+                    id="map-year-dropdown",
+                    options=[{"label": y, "value": y} for y in years],
+                    value="2019", clearable=False, style={"width": "200px"}
+                )
+            ], style={"display": "inline-block", "marginRight": "20px"}),
 
-        html.Div([
-            html.Label("Selecciona tipo de cáncer:"),
-            dcc.Dropdown(
-                id="map-cancer-dropdown",   
-                options=[
-                    {"label": "Pulmón", "value": "Pulmón"},
-                    {"label": "Mama", "value": "Mama"},
-                    {"label": "Colon", "value": "Colon"}
-                ],
-                value="Pulmón",   
-                clearable=False,
-                style={"width": "200px"}
-            )
-        ], style={"display": "inline-block"})
-    ]),
+            html.Div([
+                html.Label("Selecciona tipo de cáncer:"),
+                dcc.Dropdown(
+                    id="map-cancer-dropdown",
+                    options=[
+                        {"label": "Pulmón", "value": "Pulmón"},
+                        {"label": "Mama", "value": "Mama"},
+                        {"label": "Colon", "value": "Colon"}
+                    ],
+                    value="Pulmón", clearable=False, style={"width": "200px"}
+                )
+            ], style={"display": "inline-block"}),
+        ]),
+        dcc.Graph(id="choropleth-map"),
 
-    dcc.Graph(id="choropleth-map"),
+    ], style={"backgroundColor": "#ffffff", "padding": "25px", "borderRadius": "10px",
+              "boxShadow": "0px 2px 5px rgba(0,0,0,0.1)", "marginBottom": "40px"}),
 
-    html.H2("Análisis e Interpretación de Resultados", style={"textAlign": "center"}),
+
+    html.Div([
+    html.H2("3. Conclusiones e Interpretación de Resultados", 
+            style={"color": "#2c3e50", "borderBottom": "2px solid #2c3e50", "paddingBottom": "10px"}),
 
     html.H3("Desigualdades Territoriales Identificadas"),
     html.Ul([
-        html.Li([
-            html.Strong("Norte–Sur y Centro–Periferia: "),
-            "Las regiones andinas (Antioquia, Bogotá, Valle) presentan tasas de mortalidad hasta cinco veces superiores frente a las regiones amazónicas y de frontera."
-        ]),
-        html.Li([
-            html.Strong("Brecha Urbano–Rural: "),
-            "Las capitales y áreas metropolitanas registran valores significativamente más altos, mientras que en zonas rurales y remotas las tasas son menores, posiblemente por subregistro."
-        ]),
-        html.Li([
-            html.Strong("Desarrollo regional y reporte: "),
-            "Departamentos con mayor infraestructura sanitaria muestran tasas más elevadas por mejores capacidades diagnósticas, mientras que en territorios con menor acceso se observan cifras bajas que pueden reflejar subdiagnóstico."
-        ]),
+        html.Li("Las regiones andinas —especialmente Antioquia, Bogotá y Valle del Cauca— concentran las tasas de mortalidad por cáncer más elevadas del país. "
+                "Estas zonas presentan valores hasta cinco veces superiores frente a departamentos periféricos o amazónicos, lo que refleja tanto una mayor carga de enfermedad como mejores sistemas de registro y diagnóstico.", style={"marginBottom": "10px"}),
+        html.Li("Existe una marcada brecha urbano–rural. En las capitales y áreas metropolitanas, la mortalidad es mayor debido a una combinación de factores: "
+                "mayor exposición a riesgos ambientales, hábitos de vida urbanos, envejecimiento poblacional y mejor acceso a diagnóstico. "
+                "En contraste, en zonas rurales y apartadas, las tasas más bajas pueden estar asociadas a subregistro o falta de acceso a servicios de salud.", style={"marginBottom": "10px"}),
+        html.Li("Departamentos con infraestructura sanitaria más desarrollada —como Cundinamarca, Antioquia o Valle— tienden a mostrar tasas más altas. "
+                "Esto no necesariamente implica peores condiciones de salud, sino una detección más efectiva de casos, lo cual resalta la importancia del fortalecimiento institucional en la vigilancia epidemiológica.", style={"marginBottom": "10px"}),
     ]),
 
     html.H3("Factores Explicativos"),
     html.Ul([
-        html.Li([
-            html.Strong("Sociodemográficos: "),
-            "Mayor nivel socioeconómico y urbanización influyen en el acceso al diagnóstico y en el riesgo asociado a estilos de vida urbanos (contaminación, estrés, hábitos)."
-        ]),
-        html.Li([
-            html.Strong("Acceso y calidad en salud: "),
-            "Disponibilidad de pruebas diagnósticas, calidad del servicio (oncólogos, equipos, medicamentos), y educación en salud que permite acortar el tiempo entre síntomas, diagnóstico y tratamiento."
-        ])
+        html.Li("Los factores sociodemográficos y económicos juegan un papel clave. Las poblaciones con mayores niveles de urbanización, envejecimiento y consumo de tabaco o alcohol presentan una mayor exposición al riesgo. "
+                "A su vez, las condiciones laborales y ambientales, como la contaminación y la exposición a sustancias químicas, agravan la situación en regiones industriales.", style={"marginBottom": "10px"}),
+        html.Li("El acceso y la calidad del sistema de salud son determinantes en la mortalidad. "
+                "En departamentos con cobertura limitada, diagnósticos tardíos y escasez de personal especializado contribuyen a aumentar las tasas de mortalidad. "
+                "Asimismo, las desigualdades en el gasto público en salud generan diferencias en la capacidad de respuesta regional.", style={"marginBottom": "10px"}),
+        html.Li("Las políticas de prevención y detección temprana son variables críticas. Programas como campañas de vacunación (por ejemplo, contra el VPH), detección de cáncer de mama o colonoscopías regulares tienen efectos diferenciales según el territorio y la inversión institucional.", style={"marginBottom": "10px"}),
     ]),
 
     html.H3("Relevancia de la Georreferenciación"),
     html.Ul([
-        html.Li("Visibilizar desigualdades territoriales."),
-        html.Li("Priorizar intervenciones en zonas críticas."),
-        html.Li("Detectar patrones epidemiológicos y clusters regionales."),
-        html.Li("Apoyar la planificación de políticas públicas para asignar recursos y evaluar impacto de programas regionales."),
-    ])
-],style={"fontFamily": "Arial, Helvetica, sans-serif"})
+        html.Li("La visualización geográfica de la mortalidad por cáncer permite identificar con claridad patrones territoriales, brechas regionales y zonas críticas que podrían pasar desapercibidas en análisis puramente estadísticos.", style={"marginBottom": "10px"}),
+        html.Li("El enfoque espacial facilita la priorización de políticas públicas focalizadas, orientando los recursos hacia departamentos con mayor vulnerabilidad o menor capacidad diagnóstica. "
+                "Esto favorece una gestión sanitaria más equitativa y eficiente.", style={"marginBottom": "10px"}),
+        html.Li("Además, el análisis georreferenciado permite detectar posibles clusters epidemiológicos, asociar la mortalidad a determinantes sociales del entorno (como pobreza, contaminación o acceso a servicios), y evaluar el impacto de programas regionales de salud.", style={"marginBottom": "10px"}),
+        html.Li("En conjunto, la integración de datos epidemiológicos y espaciales fortalece la toma de decisiones en salud pública y permite una planificación más estratégica basada en evidencia territorial.", style={"marginBottom": "10px"}),
+    ]),
+], 
+style={
+    "backgroundColor": "#ffffff",
+    "padding": "25px",
+    "borderRadius": "10px",
+    "boxShadow": "0px 2px 5px rgba(0,0,0,0.1)",
+    "marginBottom": "40px"
+})
+,
 
+], style={
+    "fontFamily": "Arial, Helvetica, sans-serif",
+    "backgroundColor": "#f8f9fa",
+    "padding": "40px"
+})
 
 @app.callback(
     [dash.dependencies.Output("graph-bar-can", "figure"),
